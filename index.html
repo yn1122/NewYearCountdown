@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>春节倒计时</title>
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            background-image: url('https://test.sxxc.gov.cn/previewFileBrowser/2026-02-04/345c4098-ff78-4484-b40d-3c87a65c081b.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            font-family: "Microsoft YaHei", sans-serif;
+            position: relative;
+            overflow: hidden;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                background-image: url('https://test.sxxc.gov.cn/previewFileBrowser/2026-02-04/8e13f028-bd52-4cdf-aa54-a445f2f3a785.jpg');
+            }
+        }
+
+        .container {
+            text-align: center;
+            position: absolute;
+            top: 35%;
+            left: 30%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.5);
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            z-index: 20;
+            backdrop-filter: blur(2px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            max-width: 90vw;
+            width: fit-content;
+        }
+
+        h1 {
+            color: #c0392b;
+            margin-bottom: 20px;
+            font-size: 28px;
+            font-weight: bold;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .countdown {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .time-unit {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 70px;
+        }
+
+        .number {
+            font-weight: bold;
+            font-size: 36px;
+            background: linear-gradient(to bottom, #e74c3c, #c0392b);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 2px 4px rgba(231, 76, 60, 0.3);
+        }
+
+        .label {
+            font-size: 14px;
+            color: #222525;
+            margin-top: 6px;
+        }
+
+        /* 飘雪容器 */
+        #snow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .snowflake {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.7;
+            filter: blur(0.5px);
+        }
+
+        /* 弹幕容器 */
+        #barrage-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 100;
+            overflow: hidden;
+        }
+
+        .barrage-item {
+            position: absolute;
+            white-space: nowrap;
+            color: white;
+            background: rgba(231, 76, 60, 0.85);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 16px;
+            opacity: 0;
+            animation: barrageMove 12s linear forwards;
+        }
+
+        @keyframes barrageMove {
+            0% {
+                transform: translateX(100vw);
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 1;
+            }
+
+            90% {
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateX(-200px);
+                opacity: 0;
+            }
+        }
+
+        /* 音乐按钮样式 */
+        .musicBtn {
+            background: linear-gradient(to bottom, #e74c3c, #c0392b);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+            margin-top: 15px;
+            transition: transform 0.2s;
+        }
+
+        .musicBtn:hover {
+            transform: scale(1.05);
+        }
+
+        /* ===== 响应式适配 ===== */
+        @media (max-width: 768px) {
+            .container {
+                padding: 16px;
+                border-radius: 12px;
+                text-align: center;
+                position: absolute;
+                top: 50%;
+                left: 50%;
+            }
+
+            h1 {
+                font-size: 22px;
+                margin-bottom: 16px;
+            }
+
+            .countdown {
+                gap: 12px;
+            }
+
+            .time-unit {
+                min-width: 50px;
+            }
+
+            .number {
+                font-size: 28px;
+            }
+
+            .label {
+                font-size: 12px;
+            }
+
+            .musicBtn {
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+
+            .workday-countdown {
+                font-size: 14px !important;
+            }
+
+            #workdays {
+                font-size: 20px !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .countdown {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .time-unit {
+                min-width: 45px;
+            }
+
+            .number {
+                font-size: 24px;
+            }
+
+            /* 音乐按钮垂直排列 */
+            .container>div[style*="flex"] {
+                flex-direction: column !important;
+                gap: 6px !important;
+            }
+
+            #songTitle {
+                font-size: 12px !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>加载中...</h1>
+        <div class="countdown">
+            <div class="time-unit">
+                <span id="days" class="number">00</span>
+                <span class="label">天</span>
+            </div>
+            <div class="time-unit">
+                <span id="hours" class="number">00</span>
+                <span class="label">小时</span>
+            </div>
+            <div class="time-unit">
+                <span id="minutes" class="number">00</span>
+                <span class="label">分钟</span>
+            </div>
+            <div class="time-unit">
+                <span id="seconds" class="number">00</span>
+                <span class="label">秒</span>
+            </div>
+        </div>
+        <div class="holiday-countdown" style="margin-top: 10px; font-size: 16px; color: #e74c3c;">
+            距离放假还有 <span id="holiday-days" class="number" style="font-size: 24px;">0</span> 天（不含放假当天）
+        </div>
+        <div class="workday-countdown" style="margin-top: 20px; font-size: 16px; color: #e74c3c;">
+            还需上班 <span id="workdays" class="number" style="font-size: 24px;">0</span> 天（不算当天和周末）
+        </div>
+        <!-- 音乐控制区 -->
+        <div style="margin-top: 15px; display: flex; justify-content: center; gap: 8px; flex-wrap: wrap;">
+            <button id="prevBtn" class="musicBtn">⏮ 上一首</button>
+            <button id="playBtn" class="musicBtn">▶ 播放</button>
+            <button id="nextBtn" class="musicBtn">⏭ 下一首</button>
+        </div>
+        <div id="songTitle" style="
+            margin-top: 8px;
+            font-size: 14px;
+            color: #c0392b;
+            font-weight: bold;
+            min-height: 1.2em;
+          ">加载中...</div>
+        <audio id="springMusic" preload="metadata"></audio>
+    </div>
+
+    <!-- 飘雪 -->
+    <div id="snow"></div>
+    <!-- 弹幕 -->
+    <div id="barrage-container"></div>
+
+    <script>
+        // 春节日期
+        const springFestivalDates = {
+            2026: new Date('2026-02-17'),
+            2027: new Date('2027-02-06'),
+            2028: new Date('2028-01-26'),
+            2029: new Date('2029-02-13'),
+            2030: new Date('2030-02-03'),
+            2031: new Date('2031-01-23')
+        };
+
+        function getSpringFestivalInfo() {
+            const now = new Date();
+            const currentYear = now.getFullYear();
+            if (now > springFestivalDates[currentYear]) {
+                return { date: springFestivalDates[currentYear + 1], year: currentYear + 1 };
+            }
+            return { date: springFestivalDates[currentYear], year: currentYear };
+        }
+
+        function updateCountdown() {
+            const now = new Date();
+            const { date: springFestival, year } = getSpringFestivalInfo();
+            const diff = springFestival - now;
+
+            document.querySelector('h1').textContent = `🏮 距 ${year} 年春节还有`;
+
+            if (diff <= 0) {
+                ['days', 'hours', 'minutes', 'seconds'].forEach(id => {
+                    document.getElementById(id).textContent = '00';
+                });
+                document.getElementById('workdays').textContent = '0';
+                document.getElementById('holiday-days').textContent = '0';
+                return;
+            }
+
+            // 倒计时（天、时、分、秒）
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+            document.getElementById('days').textContent = String(days).padStart(2, '0');
+            document.getElementById('hours').textContent = String(hours).padStart(2, '0');
+            document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
+            document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
+
+            // ✅ 关键修改：计算到“放假前一天”（春节 - 3 天）
+            const dayBeforeHoliday = new Date(springFestival);
+            dayBeforeHoliday.setDate(springFestival.getDate() - 3); // 放假前一天
+            const diffToHoliday = dayBeforeHoliday - now;
+            const daysToHoliday = diffToHoliday > 0 ? Math.ceil(diffToHoliday / (1000 * 60 * 60 * 24)) : 0;
+            document.getElementById('holiday-days').textContent = daysToHoliday;
+
+            // 工作日计算（不含春节当天）
+            const workdays = countWorkdays(new Date(), springFestival);
+            document.getElementById('workdays').textContent = workdays;
+        }
+
+        function countWorkdays(today, springFestival) {
+            let workdays = 0;
+            const currentDate = new Date(today);
+            const end = new Date(springFestival);
+            end.setDate(end.getDate() - 1); // 不含春节当天
+
+            while (currentDate <= end) {
+                const dayOfWeek = currentDate.getDay();
+                if (dayOfWeek !== 0 && dayOfWeek !== 6) { // 周一到周五
+                    workdays++;
+                }
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+            return workdays;
+        }
+
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+
+        // ========== 飘雪 ==========
+        const snowContainer = document.getElementById('snow');
+        const snowflakesCount = window.innerWidth < 768 ? 30 : 70;
+        for (let i = 0; i < snowflakesCount; i++) {
+            const snowflake = document.createElement('div');
+            snowflake.classList.add('snowflake');
+            const size = Math.random() * 4 + 2;
+            snowflake.style.width = `${size}px`;
+            snowflake.style.height = `${size}px`;
+            snowflake.style.left = `${Math.random() * 100}%`;
+            snowflake.style.top = `${-size}px`;
+            snowflake.style.animation = `fall ${Math.random() * 7 + 8}s linear infinite`;
+            snowflake.style.animationDelay = `${Math.random() * 5}s`;
+            snowContainer.appendChild(snowflake);
+        }
+        const snowStyle = document.createElement('style');
+        snowStyle.textContent = `
+        @keyframes fall {
+            to { transform: translateY(100vh) translateX(${Math.random() > 0.5 ? 30 : -30}px); }
+        }
+        `;
+        document.head.appendChild(snowStyle);
+
+        // ========== 新年祝福弹幕 ==========
+        const blessings = [
+            "新年快乐！万事如意！",
+            "恭喜发财，红包拿来！",
+            "福星高照，阖家幸福！",
+            "岁岁平安，年年有余！",
+            "吉祥如意，幸福安康！",
+            "财源广进，事业高升！",
+            "笑口常开，好运连连！",
+            "平安喜乐，顺心顺意！",
+            "新春大吉，福气满满！",
+            "心想事成，万事如意！",
+            "喜悦无限，欢笑不断！",
+            "大财、小财、意外财，财源滚滚；亲情、友情、爱情，情情如意；官运、财运、桃花运，运运亨通；爱人、亲人、友人，人人平安！恭贺新春快乐！",
+            "时光流转不停歇，辞旧迎新又一载",
+            "看那春联红似火，映照家门兴旺景象;听这鞭炮响震天，宣告吉兆来临时刻",
+            "过年啦！",
+            "见者发财！",
+            "祝大家新春快乐！",
+            "事业高升，梦想成真!"
+        ];
+
+        const barrageContainer = document.getElementById('barrage-container');
+        let barrageId = 0;
+
+        function createBarrage() {
+            const text = blessings[Math.floor(Math.random() * blessings.length)];
+            const item = document.createElement('div');
+            item.className = 'barrage-item';
+            item.textContent = text;
+            item.id = `barrage-${barrageId++}`;
+
+            const minY = 80;
+            const maxY = window.innerHeight - 100;
+            const y = Math.random() * (maxY - minY) + minY;
+            item.style.top = `${y}px`;
+
+            const duration = 10 + Math.random() * 6;
+            item.style.animationDuration = `${duration}s`;
+
+            barrageContainer.appendChild(item);
+
+            setTimeout(() => {
+                if (item.parentNode) {
+                    item.parentNode.removeChild(item);
+                }
+            }, duration * 1000);
+        }
+
+        const barrageInterval = window.innerWidth < 768 ? 2500 : 1500;
+        setInterval(createBarrage, barrageInterval);
+
+        // ========== 春节音乐播放器 ==========
+        const playlist = [
+            {
+                url: "https://test.sxxc.gov.cn/previewFileBrowser/2026-01-26/b52911fc-3508-42ca-94b5-1ec5bd89abc1.mp3",
+                title: "春节序曲 - 中国交响乐团"
+            },
+            {
+                url: "https://test.sxxc.gov.cn/previewFileBrowser/2026-01-26/bfe60a2e-42f6-4a1f-a86e-0630ca9decf3.mp3",
+                title: "过年的歌 - 摩登兄弟"
+            },
+            {
+                url: "https://test.sxxc.gov.cn/previewFileBrowser/2026-01-26/ce075d0e-0260-469d-8438-8c5c1fbe3a6d.mp3",
+                title: "我会一直顺（新年发财版）-诚天舒"
+            },
+            {
+                url: "https://test.sxxc.gov.cn/previewFileBrowser/2026-01-26/4c56a5f5-c502-4f39-be5e-6db7bc40183f.mp3",
+                title: "新年暖洋洋 (《假日暖洋洋2》电视剧片头曲) - 宝石Gem"
+            },
+            {
+                url: "https://test.sxxc.gov.cn/previewFileBrowser/2026-01-26/c9d1c6f7-e69e-4f43-aafc-811ad43074f1.mp3",
+                title: "拜新年 - 凤凰传奇"
+            },
+        ];
+
+        let currentTrackIndex = 0;
+        const music = document.getElementById('springMusic');
+        const playBtn = document.getElementById('playBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+
+        let isPlaying = false;
+
+        function loadTrack(index) {
+            if (playlist.length === 0) return;
+            currentTrackIndex = ((index % playlist.length) + playlist.length) % playlist.length;
+
+            const track = playlist[currentTrackIndex];
+            music.src = track.url;
+            music.load();
+
+            document.getElementById('songTitle').textContent = track.title;
+        }
+
+        function togglePlay() {
+            if (isPlaying) {
+                music.pause();
+                playBtn.textContent = '▶ 播放';
+                isPlaying = false;
+            } else {
+                const playPromise = music.play();
+                if (playPromise !== undefined) {
+                    playPromise
+                        .then(() => {
+                            playBtn.textContent = '⏸ 暂停';
+                            isPlaying = true;
+                        })
+                        .catch(error => {
+                            alert('浏览器阻止了自动播放，请点击地址栏的“声音”图标允许播放。');
+                            console.warn('Audio play failed:', error);
+                        });
+                }
+            }
+        }
+
+        function nextTrack() {
+            loadTrack(currentTrackIndex + 1);
+            if (isPlaying) {
+                music.play().then(() => {
+                    playBtn.textContent = '⏸ 暂停';
+                }).catch(console.warn);
+            }
+        }
+
+        function prevTrack() {
+            loadTrack(currentTrackIndex - 1);
+            if (isPlaying) {
+                music.play().then(() => {
+                    playBtn.textContent = '⏸ 暂停';
+                }).catch(console.warn);
+            }
+        }
+
+        music.addEventListener('ended', () => {
+            nextTrack();
+        });
+
+        // 绑定按钮事件
+        playBtn.addEventListener('click', togglePlay);
+        prevBtn.addEventListener('click', prevTrack);
+        nextBtn.addEventListener('click', nextTrack);
+
+        // 初始化第一首歌
+        loadTrack(0);
+    </script>
+</body>
+
+</html>
