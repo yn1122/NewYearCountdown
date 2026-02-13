@@ -23,7 +23,12 @@
                 background-image: url('https://test.sxxc.gov.cn/previewFileBrowser/2026-02-04/8e13f028-bd52-4cdf-aa54-a445f2f3a785.jpg');
             }
         }
-
+        .today-date {
+            font-size: 24px;
+            color: #2c2a2a;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
         .container {
             text-align: center;
             position: absolute;
@@ -235,6 +240,7 @@
 
 <body>
     <div class="container">
+        <div id="todayDate" class="today-date">今天是 2025年04月05日</div>
         <h1>加载中...</h1>
         <div class="countdown">
             <div class="time-unit">
@@ -254,11 +260,28 @@
                 <span class="label">秒</span>
             </div>
         </div>
+
+        <!-- 距离下班倒计时 -->
+        <div class="time-to-offwork" style="margin-top: 15px; font-size: 16px; color: #e74c3c;">
+            距离下班还有 
+            <span id="off-hours" class="number" style="font-size: 24px;">00</span> 小时 
+            <span id="off-minutes" class="number" style="font-size: 24px;">00</span> 分 
+            <span id="off-seconds" class="number" style="font-size: 24px;">00</span> 秒
+        </div>
+        <!-- 距离周末 -->
+        <div class="weekend-countdown" style="margin-top: 10px; font-size: 16px; color: #e74c3c;">
+            距离本周末还有 <span id="days-to-weekend" class="number" style="font-size: 24px;">0</span> 天（含当天）
+        </div>
+        <!-- 周末前还需上班天数 -->
+        <div class="workdays-to-weekend" style="margin-top: 10px; font-size: 16px; color: #e74c3c;">
+            周末前还需上班 <span id="workdays-to-weekend" class="number" style="font-size: 24px;">0</span> 天（含当天）
+        </div>
+
         <div class="holiday-countdown" style="margin-top: 10px; font-size: 16px; color: #e74c3c;">
-            距离放假还有 <span id="holiday-days" class="number" style="font-size: 24px;">0</span> 天（不含放假当天）
+            距离春节放假还有 <span id="holiday-days" class="number" style="font-size: 24px;">0</span> 天（不含放假当天）
         </div>
         <div class="workday-countdown" style="margin-top: 20px; font-size: 16px; color: #e74c3c;">
-            还需上班 <span id="workdays" class="number" style="font-size: 24px;">0</span> 天（不算当天和周末）
+            春节前还需上班 <span id="workdays" class="number" style="font-size: 24px;">0</span> 天（不含当天和周末）
         </div>
         <!-- 音乐控制区 -->
         <div style="margin-top: 15px; display: flex; justify-content: center; gap: 8px; flex-wrap: wrap;">
@@ -302,9 +325,19 @@
         }
 
         function updateCountdown() {
+            // 更新今日日期
             const now = new Date();
+            const nowYear = now.getFullYear();
+            const dayOfWeek = now.getDay();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            let daysToWeekend = 0;
+            let workdaysToWeekend = 0;
+            document.getElementById('todayDate').textContent = `今天是 ${nowYear}年${month}月${day}日`;
+            // const now = new Date();
             const { date: springFestival, year } = getSpringFestivalInfo();
             const diff = springFestival - now;
+            
 
             document.querySelector('h1').textContent = `🏮 距 ${year} 年春节还有`;
 
@@ -338,6 +371,38 @@
             // 工作日计算（不含春节当天）
             const workdays = countWorkdays(new Date(), springFestival);
             document.getElementById('workdays').textContent = workdays;
+            // 计算距离周末还有多少天（周六/周日为0）
+            if (dayOfWeek === 6 || dayOfWeek === 0) {
+                daysToWeekend = 0;
+                workdaysToWeekend = 0;
+            } else {
+                daysToWeekend = 6 - dayOfWeek; // 周一(1) → 5天到周六，周二(2) → 4天...
+                // 工作日：从今天（含）到周五（含）
+                workdaysToWeekend = Math.max(0, 5 - dayOfWeek + 1); // 周一：5天，周二：4天...周五：1天
+            }
+
+            document.getElementById('days-to-weekend').textContent = daysToWeekend;
+            document.getElementById('workdays-to-weekend').textContent = workdaysToWeekend;
+
+            // ===== 距离下班倒计时（18:00）=====
+            const offWorkTime = new Date(now);
+            offWorkTime.setHours(18, 0, 0, 0); // 18:00:00.000
+
+            let timeToOffWork = offWorkTime - now;
+            if (timeToOffWork <= 0) {
+                // 已过18点，显示 00:00:00
+                document.getElementById('off-hours').textContent = '00';
+                document.getElementById('off-minutes').textContent = '00';
+                document.getElementById('off-seconds').textContent = '00';
+            } else {
+                const offHours = Math.floor(timeToOffWork / (1000 * 60 * 60));
+                const offMinutes = Math.floor((timeToOffWork % (1000 * 60 * 60)) / (1000 * 60));
+                const offSeconds = Math.floor((timeToOffWork % (1000 * 60)) / 1000);
+
+                document.getElementById('off-hours').textContent = String(offHours).padStart(2, '0');
+                document.getElementById('off-minutes').textContent = String(offMinutes).padStart(2, '0');
+                document.getElementById('off-seconds').textContent = String(offSeconds).padStart(2, '0');
+            }
         }
 
         function countWorkdays(today, springFestival) {
