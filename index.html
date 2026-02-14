@@ -32,7 +32,7 @@
         .container {
             text-align: center;
             position: absolute;
-            top: 35%;
+            top: 40%;
             left: 30%;
             transform: translate(-50%, -50%);
             background: rgba(255, 255, 255, 0.5);
@@ -262,7 +262,7 @@
         </div>
 
         <!-- 距离下班倒计时 -->
-        <div class="time-to-offwork" style="margin-top: 15px; font-size: 16px; color: #e74c3c;">
+        <div id="offWorkContainer" class="time-to-offwork" style="margin-top: 15px; font-size: 16px; color: #e74c3c;">
             距离下班还有 
             <span id="off-hours" class="number" style="font-size: 24px;">00</span> 小时 
             <span id="off-minutes" class="number" style="font-size: 24px;">00</span> 分 
@@ -270,14 +270,14 @@
         </div>
         <!-- 距离周末 -->
         <div class="weekend-countdown" style="margin-top: 10px; font-size: 16px; color: #e74c3c;">
-            距离本周末还有 <span id="days-to-weekend" class="number" style="font-size: 24px;">0</span> 天（含当天）
+            距离本周末还有 <span id="days-to-weekend" class="number" style="font-size: 24px;">0</span> 天（不含当天）
         </div>
         <!-- 周末前还需上班天数 -->
-        <div class="workdays-to-weekend" style="margin-top: 10px; font-size: 16px; color: #e74c3c;">
+        <!-- <div class="workdays-to-weekend" style="margin-top: 10px; font-size: 16px; color: #e74c3c;">
             周末前还需上班 <span id="workdays-to-weekend" class="number" style="font-size: 24px;">0</span> 天（含当天）
-        </div>
+        </div> -->
 
-        <div class="holiday-countdown" style="margin-top: 10px; font-size: 16px; color: #e74c3c;">
+        <div id="holidayContainer" class="holiday-countdown" style="margin-top: 10px; font-size: 16px; color: #e74c3c;">
             距离春节放假还有 <span id="holiday-days" class="number" style="font-size: 24px;">0</span> 天（不含放假当天）
         </div>
         <div class="workday-countdown" style="margin-top: 20px; font-size: 16px; color: #e74c3c;">
@@ -331,8 +331,8 @@
             const dayOfWeek = now.getDay();
             const month = String(now.getMonth() + 1).padStart(2, '0');
             const day = String(now.getDate()).padStart(2, '0');
-            let daysToWeekend = 0;
-            let workdaysToWeekend = 0;
+            // let daysToWeekend = 0;
+            // let workdaysToWeekend = 0;
             document.getElementById('todayDate').textContent = `今天是 ${nowYear}年${month}月${day}日`;
             // const now = new Date();
             const { date: springFestival, year } = getSpringFestivalInfo();
@@ -361,47 +361,78 @@
             document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
             document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
 
-            // ✅ 关键修改：计算到“放假前一天”（春节 - 3 天）
-            const dayBeforeHoliday = new Date(springFestival);
-            dayBeforeHoliday.setDate(springFestival.getDate() - 3); // 放假前一天
-            const diffToHoliday = dayBeforeHoliday - now;
-            const daysToHoliday = diffToHoliday > 0 ? Math.ceil(diffToHoliday / (1000 * 60 * 60 * 24)) : 0;
-            document.getElementById('holiday-days').textContent = daysToHoliday;
+            // ===== 春节放假倒计时逻辑 =====
+            const holidayContainer = document.getElementById('holidayContainer');
+            // const springFestival = getSpringFestivalInfo().date;
 
-            // 工作日计算（不含春节当天）
-            const workdays = countWorkdays(new Date(), springFestival);
-            document.getElementById('workdays').textContent = workdays;
-            // 计算距离周末还有多少天（周六/周日为0）
-            if (dayOfWeek === 6 || dayOfWeek === 0) {
-                daysToWeekend = 0;
-                workdaysToWeekend = 0;
+            // 判断今天是否 >= 春节（即已放假）
+            if (now >= springFestival) {
+                // 已过春节：显示祝福语
+                holidayContainer.innerHTML = '<div style="font-size: 18px; color: #27ae60; font-weight: bold;">新春快乐，阖家欢乐！</div>';
             } else {
-                daysToWeekend = 6 - dayOfWeek; // 周一(1) → 5天到周六，周二(2) → 4天...
-                // 工作日：从今天（含）到周五（含）
-                workdaysToWeekend = Math.max(0, 5 - dayOfWeek + 1); // 周一：5天，周二：4天...周五：1天
+                // 春节前：计算到“放假前一天”（春节 - 3 天）
+                const dayBeforeHoliday = new Date(springFestival);
+                dayBeforeHoliday.setDate(springFestival.getDate() - 3);
+                const diffToHoliday = dayBeforeHoliday - now;
+                const daysToHoliday = diffToHoliday > 0 ? Math.ceil(diffToHoliday / (1000 * 60 * 60 * 24)) : 0;
+                holidayContainer.innerHTML = `距离春节放假还有 <span class="number" style="font-size: 24px;">${daysToHoliday}</span> 天（不含放假当天）`;
             }
 
-            document.getElementById('days-to-weekend').textContent = daysToWeekend;
-            document.getElementById('workdays-to-weekend').textContent = workdaysToWeekend;
+            // 计算到“放假前一天”（春节 - 3 天）
+            // const dayBeforeHoliday = new Date(springFestival);
+            // dayBeforeHoliday.setDate(springFestival.getDate() - 3); // 放假前一天
+            // const diffToHoliday = dayBeforeHoliday - now;
+            // const daysToHoliday = diffToHoliday > 0 ? Math.ceil(diffToHoliday / (1000 * 60 * 60 * 24)) : 0;
+            // document.getElementById('holiday-days').textContent = daysToHoliday;
 
+            // 工作日计算（不含春节当天）
+            // const workdays = countWorkdays(new Date(), springFestival);
+            // document.getElementById('workdays').textContent = workdays;
+            // 计算距离周末还有多少天（周六/周日为0）
+            // if (dayOfWeek === 6 || dayOfWeek === 0) {
+            //     daysToWeekend = 0;
+            //     workdaysToWeekend = 0;
+            // } else {
+            //     daysToWeekend = 6 - dayOfWeek; // 周一(1) → 5天到周六，周二(2) → 4天...
+            //     // 工作日：从今天（含）到周五（含）
+            //     workdaysToWeekend = Math.max(0, 5 - dayOfWeek); // 周一：5天，周二：4天...周五：1天
+            // }
+
+            // document.getElementById('days-to-weekend').textContent = daysToWeekend;
+            // document.getElementById('workdays-to-weekend').textContent = workdaysToWeekend;
+            const weekendContainer = document.querySelector('.weekend-countdown');
+            if (dayOfWeek === 6 || dayOfWeek === 0) {
+                // 周六或周日
+                weekendContainer.innerHTML = '<div style="font-size: 18px; color: #e74c3c; font-weight: bold;">周末到了，祝您周末愉快！</div>';
+            } else {
+                // 周一至周五
+                const daysToWeekend = 6 - dayOfWeek; // 不含当天
+                weekendContainer.innerHTML = `
+                    距离本周末还有 
+                    <span class="number" style="font-size: 24px;">${daysToWeekend}</span> 天（不含当天）
+                `;
+            }
             // ===== 距离下班倒计时（18:00）=====
             const offWorkTime = new Date(now);
             offWorkTime.setHours(18, 0, 0, 0); // 18:00:00.000
 
             let timeToOffWork = offWorkTime - now;
+            const container = document.getElementById('offWorkContainer');
             if (timeToOffWork <= 0) {
-                // 已过18点，显示 00:00:00
-                document.getElementById('off-hours').textContent = '00';
-                document.getElementById('off-minutes').textContent = '00';
-                document.getElementById('off-seconds').textContent = '00';
+                // 已下班：显示温馨提醒
+                container.innerHTML = '<div style="font-size: 18px; color: #e74c3c; font-weight: bold;">下班了，好好休息吧！</div>';
             } else {
+                // 未下班：显示倒计时
                 const offHours = Math.floor(timeToOffWork / (1000 * 60 * 60));
                 const offMinutes = Math.floor((timeToOffWork % (1000 * 60 * 60)) / (1000 * 60));
                 const offSeconds = Math.floor((timeToOffWork % (1000 * 60)) / 1000);
 
-                document.getElementById('off-hours').textContent = String(offHours).padStart(2, '0');
-                document.getElementById('off-minutes').textContent = String(offMinutes).padStart(2, '0');
-                document.getElementById('off-seconds').textContent = String(offSeconds).padStart(2, '0');
+                container.innerHTML = `
+                    距离下班还有 
+                    <span class="number" style="font-size: 24px;">${String(offHours).padStart(2, '0')}</span> 小时 
+                    <span class="number" style="font-size: 24px;">${String(offMinutes).padStart(2, '0')}</span> 分 
+                    <span class="number" style="font-size: 24px;">${String(offSeconds).padStart(2, '0')}</span> 秒
+                `;
             }
         }
 
