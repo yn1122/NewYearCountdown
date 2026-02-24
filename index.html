@@ -345,9 +345,9 @@
             const holidayStart = new Date(currentFestival);
             holidayStart.setDate(currentFestival.getDate() - 2);
             holidayStart.setHours(0, 0, 0, 0); // 确保从当天开始
-            // 计算春节假期结束时间（春节后七天，即正月初八）
+            // 计算春节假期结束时间（春节后六天，即正月初七）
             const holidayEnd = new Date(currentFestival);
-            holidayEnd.setDate(currentFestival.getDate() + 7);
+            holidayEnd.setDate(currentFestival.getDate() + 6);
             holidayEnd.setHours(23, 59, 59, 999); // 确保包含当天
 
             // 判断是否在春节假期中
